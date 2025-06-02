@@ -4,6 +4,8 @@ const port = 3131;
 
 app.use(express.json());
 
+const users = [];
+
 app.get('/', (req, res) => {
     res.status(200).send('hi')
 })
