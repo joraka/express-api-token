@@ -18,8 +18,8 @@ const validator = {
 
     return true;
   },
-  
-  isRegistrationDataValid: (res, username, email, password) => {
+
+  isRegistrationDataExists: (res, username, email, password) => {
     if (!username || !email || !password) {
       res
         .status(400)
@@ -31,8 +31,8 @@ const validator = {
   },
 
   isValidUsername: (res, username) => {
-    if (username.length < 2 || username > 32) {
-      res.status(400).json({ message: "Username length must be between 2 and 32" });
+    if (username.length < 3 || username.length > 32) {
+      res.status(400).json({ message: "Username length must be between 3 and 32" });
       return false;
     }
 
@@ -61,23 +61,34 @@ const validator = {
   },
 
   isValidPassword: (res, password) => {
-    if (password.length < 2 || password > 32) {
-      res.status(400).json({ message: "Password length must be between 2 and 32" });
+    if (password.length < 2 || password.length > 32) {
+      res.status(400).json({ message: "Password length must be between 3 and 32 characters" });
       return false;
     }
 
+    let hasLetters = false;
+    let hasNumbers = false;
+
     for (let i = 0; i < password.length; i++) {
       const code = password.charCodeAt(i);
-      if (
-        (code < 48 || code > 57) && // 0-9
-        (code < 65 || code > 90) && // A-Z
-        (code < 97 || code > 122) // a-z
-      ) {
+
+      if (code >= 48 && code <= 57) { // 0-9
+        hasNumbers = true;
+      } else if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) { // A-Z, a-z
+        hasLetters = true;
+      } else {
         res.status(400).json({
-          message: "Invalid character entered, must be alphabetical and numerical letters",
+          message: "Invalid password, must contain letters and numbers",
         });
         return false;
       }
+    }
+
+    if (!hasLetters || !hasNumbers) {
+      res.status(400).json({
+        message: "Password must contain at least one letter and one number",
+      });
+      return false;
     }
 
     return true;
@@ -115,7 +126,7 @@ app.get("/v1/users/:id", (req, res) => {
 app.post("/v1/users", (req, res) => {
   let { username, email, password } = req.body;
 
-  if (!validator.isRegistrationDataValid(res, username, email, password)) return;
+  if (!validator.isRegistrationDataExists(res, username, email, password)) return;
 
   username = username.trim();
 
@@ -152,7 +163,7 @@ app.put("/v1/users/:id", (req, res) => {
   let { id } = req.params;
 
   if (!validator.isValidId(res, id)) return;
-  if (!validator.isRegistrationDataValid(res, username, email, password)) return;
+  if (!validator.isRegistrationDataExists(res, username, email, password)) return;
 
   const foundUserIndex = db.users.findIndex((user) => user.id === parseInt(id));
 
@@ -233,10 +244,10 @@ app.patch("/v1/users/:id", (req, res) => {
 });
 
 // delete methods
-//user id validation
 app.delete("/v1/users/:id", (req, res) => {
   let { id } = req.params;
 
+  //user id validation
   if (!validator.isValidId(res, id)) return;
 
   const foundUserIndex = db.users.findIndex((user) => user.id === parseInt(id));
