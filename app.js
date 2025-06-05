@@ -11,7 +11,7 @@ const db = {
 
 const validator = {
   isValidId: (res, id) => {
-    if (!id || !isFinite(id)) {
+    if (!id || !isFinite(id) || id < 1) {
       res.status(400).json({ message: "ID invalid or missing" });
       return false;
     }
@@ -72,9 +72,11 @@ const validator = {
     for (let i = 0; i < password.length; i++) {
       const code = password.charCodeAt(i);
 
-      if (code >= 48 && code <= 57) { // 0-9
+      if (code >= 48 && code <= 57) {
+        // 0-9
         hasNumbers = true;
-      } else if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) { // A-Z, a-z
+      } else if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) {
+        // A-Z, a-z
         hasLetters = true;
       } else {
         res.status(400).json({
@@ -94,6 +96,10 @@ const validator = {
     return true;
   },
 };
+
+app.get("/", (req, res) => {
+  res.send("OK");
+});
 
 app.get("/v1/", (req, res) => {
   res.status(200).send("hi");
@@ -124,7 +130,7 @@ app.get("/v1/users/:id", (req, res) => {
 
 //post methods
 app.post("/v1/users", (req, res) => {
-  let { username, email, password } = req.body;
+  let { username, email, password } = req?.body || {};
 
   if (!validator.isRegistrationDataExists(res, username, email, password)) return;
 
@@ -159,7 +165,7 @@ app.post("/v1/users", (req, res) => {
 
 // put methods
 app.put("/v1/users/:id", (req, res) => {
-  let { username, email, password } = req.body;
+  let { username, email, password } = req?.body || {};
   let { id } = req.params;
 
   if (!validator.isValidId(res, id)) return;
@@ -199,7 +205,7 @@ app.put("/v1/users/:id", (req, res) => {
 
 // patch methods
 app.patch("/v1/users/:id", (req, res) => {
-  let { username, email, password } = req.body;
+  let { username, email, password } = req?.body || {};
   let { id } = req.params;
 
   if (!validator.isValidId(res, id)) return;
@@ -245,9 +251,8 @@ app.patch("/v1/users/:id", (req, res) => {
 
 // delete methods
 app.delete("/v1/users/:id", (req, res) => {
-  let { id } = req.params;
-
   //user id validation
+  let { id } = req?.params || {};
   if (!validator.isValidId(res, id)) return;
 
   const foundUserIndex = db.users.findIndex((user) => user.id === parseInt(id));
@@ -260,6 +265,36 @@ app.delete("/v1/users/:id", (req, res) => {
 
   res.json({
     message: "User deleted",
+  });
+});
+
+//login
+app.get("/v1/login", (req, res) => {
+  let { username, password } = req?.body || {};
+
+  if (!username || !password) {
+    return res.status(400).json({ message: "Username or password is invalid" });
+  }
+
+  if (username.length < 3 || username.length > 32) {
+    res.status(400).json({ message: "Username length must be between 3 and 32" });
+    return false;
+  }
+
+  if (!validator.isValidPassword(res, password)) return;
+
+  const foundUserIndex = db.users.findIndex(
+    (user) => user.username === username && user.password === password
+  );
+
+  if (foundUserIndex === -1) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  res.json({
+    message: "User logged in",
+    user: db.users[foundUserIndex],
+    hash: parseInt(Math.random() * 1e16),
   });
 });
 
