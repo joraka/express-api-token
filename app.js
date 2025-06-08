@@ -10,59 +10,37 @@ const db = {
 };
 
 const validator = {
-  isValidId: (res, id) => {
-    if (!id || !isFinite(id) || id < 1) {
-      res.status(400).json({ message: "ID invalid or missing" });
-      return false;
-    }
+  isValidId: (id) => {
+    return isFinite(id) && id >= 1;
+  },
 
+  isAllFieldExists: (username, email, password) => {
+    return Boolean(username && email && password);
+  },
+
+  isSomeFieldsExist: (username, email, password) => {
+    return Boolean(username || email || password);
+  },
+
+  isUsernameExits: (username) => {
+    return db.users.some((user) => user.username === username);
+  },
+
+  isValidUsername: (username) => {
+    if (username.length < 3 || username.length > 32) return false;
     return true;
   },
 
-  isRegistrationDataExists: (res, username, email, password) => {
-    if (!username || !email || !password) {
-      res
-        .status(400)
-        .json({ message: "Missing field. Username, email and password are required." });
-      return false;
-    }
-
-    return true;
+  isEmailExists: (email) => {
+    return db.users.some((user) => user.email === email);
   },
 
-  isValidUsername: (res, username) => {
-    if (username.length < 3 || username.length > 32) {
-      res.status(400).json({ message: "Username length must be between 3 and 32" });
-      return false;
-    }
-
-    const foundUsername = db.users.findIndex((user) => user.username === username);
-
-    if (foundUsername !== -1) {
-      res.status(400).json({ message: "Username already exists" });
-      return false;
-    }
-
-    return true;
+  isValidEmail: (email) => {
+    return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
   },
 
-  isValidEmail: (res, email) => {
-    const foundEmail = db.users.findIndex((user) => user.email === email);
-
-    if (foundEmail !== -1) {
-      res.status(400).json({ message: "Email already exists" });
-      return false;
-    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
-      res.status(400).json({ message: "Invalid email address" });
-      return false;
-    }
-
-    return true;
-  },
-
-  isValidPassword: (res, password) => {
+  isValidPassword: (password) => {
     if (password.length < 2 || password.length > 32) {
-      res.status(400).json({ message: "Password length must be between 3 and 32 characters" });
       return false;
     }
 
@@ -79,17 +57,11 @@ const validator = {
         // A-Z, a-z
         hasLetters = true;
       } else {
-        res.status(400).json({
-          message: "Invalid password, must contain letters and numbers",
-        });
         return false;
       }
     }
 
     if (!hasLetters || !hasNumbers) {
-      res.status(400).json({
-        message: "Password must contain at least one letter and one number",
-      });
       return false;
     }
 
@@ -112,7 +84,9 @@ app.get("/v1/users", (req, res) => {
 app.get("/v1/users/:id", (req, res) => {
   const { id } = req.params;
 
-  if (!validator.isValidId(res, id)) return;
+  if (!validator.isValidId(id)) {
+    return res.status(400).json({ message: "ID invalid or missing" });
+  }
 
   const foundIndex = db.users.findIndex((user) => user.id === parseInt(id));
 
@@ -132,21 +106,40 @@ app.get("/v1/users/:id", (req, res) => {
 app.post("/v1/users", (req, res) => {
   let { username, email, password } = req?.body || {};
 
-  if (!validator.isRegistrationDataExists(res, username, email, password)) return;
+  if (!validator.isAllFieldExists(username, email, password)) {
+    return res
+      .status(400)
+      .json({ message: "Missing field. Username, email and password are required." });
+  }
 
   username = username.trim();
 
   //unique username validation
   //username length validation 3 to 35
-  if (!validator.isValidUsername(res, username)) return;
+
+  if (!validator.isValidUsername(username)) {
+    return res.status(400).json({ message: "Username length must be between 3 and 32" });
+  }
+
+  if (validator.isUsernameExits(username)) {
+    return res.status(400).json({ message: "Username already exists" });
+  }
 
   //email validation unique
   //email format validation
-  if (!validator.isValidEmail(res, email)) return;
+  if (!validator.isValidEmail(email)) {
+    return res.status(400).json({ message: "Invalid email address" });
+  }
+
+  if (validator.isEmailExists(email)) {
+    return res.status(400).json({ message: "Email already exists" });
+  }
 
   //possword validation - length 8 to 32,
   //password validation - only numbers and alphabetical characters
-  if (!validator.isValidPassword(res, password)) return;
+  if (!validator.isValidPassword(password)) {
+    return res.status(400).json({ message: "Password length must be between 3 and 32 characters" });
+  }
 
   const user = {
     id: ++db.max_id,
@@ -168,8 +161,15 @@ app.put("/v1/users/:id", (req, res) => {
   let { username, email, password } = req?.body || {};
   let { id } = req.params;
 
-  if (!validator.isValidId(res, id)) return;
-  if (!validator.isRegistrationDataExists(res, username, email, password)) return;
+  if (!validator.isValidId(id)) {
+    return res.status(400).json({ message: "ID invalid or missing" });
+  }
+
+  if (!validator.isAllFieldExists(username, email, password)) {
+    return res
+      .status(400)
+      .json({ message: "Missing field. Username, email and password are required." });
+  }
 
   const foundUserIndex = db.users.findIndex((user) => user.id === parseInt(id));
 
@@ -181,15 +181,25 @@ app.put("/v1/users/:id", (req, res) => {
 
   //unique username validation
   //username length validation 3 to 35
-  if (!validator.isValidUsername(res, username)) return;
+  if (!validator.isValidUsername(username)) {
+    return res.status(400).json({ message: "Username length must be between 3 and 32" });
+  }
+
+  if (validator.isUsernameExits(username)) {
+    return res.status(400).json({ message: "Username already exists" });
+  }
 
   //email validation unique
   //email format validation
-  if (!validator.isValidEmail(res, email)) return;
+  if (!validator.isValidEmail(email)) {
+    return res.status(400).json({ message: "Invalid email address" });
+  }
 
   //possword validation - length 8 to 32,
   //password validation - only numbers and alphabetical characters
-  if (!validator.isValidPassword(res, password)) return;
+  if (!validator.isValidPassword(password)) {
+    return res.status(400).json({ message: "Password length must be between 3 and 32 characters" });
+  }
 
   const foundUserObject = db.users[foundUserIndex];
 
@@ -208,7 +218,9 @@ app.patch("/v1/users/:id", (req, res) => {
   let { username, email, password } = req?.body || {};
   let { id } = req.params;
 
-  if (!validator.isValidId(res, id)) return;
+  if (!validator.isValidId(id)) {
+    return res.status(400).json({ message: "ID invalid or missing" });
+  }
 
   const foundUserIndex = db.users.findIndex((user) => user.id === parseInt(id));
 
@@ -216,7 +228,7 @@ app.patch("/v1/users/:id", (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
 
-  if (!username && !email && !password) {
+  if (!validator.isSomeFieldsExist(username, email, password)) {
     return res.status(400).json({
       message: "Must have at least one field, allowed fields are: username, email, password",
     });
@@ -226,16 +238,30 @@ app.patch("/v1/users/:id", (req, res) => {
   //username length validation 3 to 35
   if (username) {
     username = username.trim();
-    if (!validator.isValidUsername(res, username)) return;
+    if (!validator.isValidUsername(username)) {
+      return res.status(400).json({ message: "Username length must be between 3 and 32" });
+    }
+    if (validator.isUsernameExits(username)) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
   }
 
   //email validation unique
   //email format validation
-  if (email && !validator.isValidEmail(res, email)) return;
+  if (email) {
+    if (!validator.isValidEmail(email)) {
+      return res.status(400).json({ message: "Invalid email address" });
+    }
+    if (validator.isEmailExists(email)) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+  }
 
   //possword validation - length 8 to 32,
   //password validation - only numbers and alphabetical characters
-  if (password && !validator.isValidPassword(res, password)) return;
+  if (password && !validator.isValidPassword(password)) {
+    return res.status(400).json({ message: "Password length must be between 3 and 32 characters" });
+  }
 
   const foundUserObject = db.users[foundUserIndex];
 
@@ -253,7 +279,10 @@ app.patch("/v1/users/:id", (req, res) => {
 app.delete("/v1/users/:id", (req, res) => {
   //user id validation
   let { id } = req?.params || {};
-  if (!validator.isValidId(res, id)) return;
+
+  if (!validator.isValidId(id)) {
+    return res.status(400).json({ message: "ID invalid or missing" });
+  }
 
   const foundUserIndex = db.users.findIndex((user) => user.id === parseInt(id));
 
@@ -276,12 +305,13 @@ app.get("/v1/login", (req, res) => {
     return res.status(400).json({ message: "Username or password is invalid" });
   }
 
-  if (username.length < 3 || username.length > 32) {
-    res.status(400).json({ message: "Username length must be between 3 and 32" });
-    return false;
+  if (!validator.isValidUsername(username)) {
+    return res.status(400).json({ message: "Username length must be between 3 and 32" });
   }
 
-  if (!validator.isValidPassword(res, password)) return;
+  if (!validator.isValidPassword(password)) {
+    return res.status(400).json({ message: "Password length must be between 3 and 32 characters" });
+  }
 
   const foundUserIndex = db.users.findIndex(
     (user) => user.username === username && user.password === password
