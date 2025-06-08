@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "newman run tests.postman_collection.json",
+    "test": "newman run local_express_tests.postman_collection.json",
     "start": "node .",
     "dev": "node --watch .",
     "start:tests": "start-server-and-test start http://localhost:3131 test"
