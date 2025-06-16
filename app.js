@@ -39,8 +39,7 @@ const validator = {
   },
 
   isValidUsername: (username) => {
-    if (username.length < 3 || username.length > 32) return false;
-    return true;
+    return username.length >= 3 && username.length <= 32;
   },
 
   isEmailExists: (email, id) => {
@@ -57,9 +56,7 @@ const validator = {
   },
 
   isValidPassword: (password) => {
-    if (password.length < 2 || password.length > 32) {
-      return false;
-    }
+    if (password.length < 2 || password.length > 32) return false;
 
     let hasLetters = false;
     let hasNumbers = false;
@@ -78,16 +75,13 @@ const validator = {
       }
     }
 
-    if (!hasLetters || !hasNumbers) {
-      return false;
-    }
-
+    if (!hasLetters || !hasNumbers) return false;
     return true;
   },
 };
 
 app.get("/", (req, res) => {
-  res.send("OK");
+  res.status(400).send("OK");
 });
 
 app.get("/v1/", (req, res) => {
@@ -131,7 +125,6 @@ app.post("/v1/users", (req, res) => {
 
   //unique username validation
   //username length validation 3 to 35
-
   if (!validator.isValidUsername(username)) {
     return res.status(400).json({ message: "Username length must be between 3 and 32" });
   }
@@ -245,7 +238,7 @@ app.patch("/v1/users/:id", (req, res) => {
     return res.status(400).json({ message: "Invalid or missing ID" });
   }
 
-  const user = db.users.find((_user) => _user.id === idNum);
+  const user = db.users.find((user) => user.id === idNum);
 
   const updateObj = {};
 

@@ -7,17 +7,27 @@
     "test": "newman run local_express_tests.postman_collection.json",
     "start": "node .",
     "dev": "node --watch .",
-    "start:tests": "start-server-and-test start http://localhost:3131 test"
+    "start:tests": "start-server-and-test start http://localhost:3131 test",
+    "start:tests:con": "concurrently \"node app.js\" \"npm run test\"",
+    "start:tests:con:k": "concurrently -k \"node app.js\" \"npm run test\"",
+    "start:tests:con:wait:k": "concurrently -k \"node app.js\" \"wait-on http://localhost:3131 && npm run test\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "express": "^5.1.0"
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.0"
   },
   "devDependencies": {
+    "concurrently": "^9.1.2",
     "newman": "^6.2.1",
-    "start-server-and-test": "^2.0.12"
+    "newman-reporter-htmlextra": "^1.23.1",
+    "start-server-and-test": "^2.0.12",
+    "wait-on": "^8.0.3"
   }
 }
