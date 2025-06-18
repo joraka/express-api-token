@@ -2,6 +2,11 @@ const express = require("express");
 const app = express();
 const port = 3131;
 
+require("./config/env");
+
+const pgPool = require("./config/db");
+const createUserTable = require("./utils/dbinit");
+
 app.use(express.json());
 
 const db = {
@@ -84,6 +89,11 @@ app.get("/", (req, res) => {
   res.status(400).send("OK");
 });
 
+app.get("/insert", async (req, res) => {
+  await createUserTable();
+  res.status(400).send("inserted");
+});
+
 app.get("/v1/", (req, res) => {
   res.status(200).send("hi");
 });
@@ -112,7 +122,7 @@ app.get("/v1/users/:id", (req, res) => {
 });
 
 //post methods
-app.post("/v1/users", (req, res) => {
+app.post("/v1/users", async (req, res) => {
   let { username, email, password } = req?.body || {};
 
   if (!validator.isAllFieldExists([username, email, password])) {
@@ -152,19 +162,30 @@ app.post("/v1/users", (req, res) => {
     });
   }
 
-  const user = {
-    id: ++db.max_id,
-    username: username,
-    email: email,
-    password: password,
-  };
+  try {
+    const result = await pgPool.query(
+      `
+      INSERT INTO users (user_name, email, password)
+      VALUES ($1, $2, $3)
+      RETURNING *
+    `,
+      [username, email, password]
+    );
 
-  db.users.push(user);
+    const dbUser = result.rows[0];
 
-  res.json({
-    message: "User created",
-    user: getUserData(user),
-  });
+    res.json({
+      message: "User created",
+      user: {
+        id: dbUser.user_id,
+        username: dbUser.user_name,
+        email: dbUser.email,
+      },
+    });
+  } catch (err) {
+    console.error("Error inserting user:", err);
+    res.status(500).json({ message: "Database error" });
+  }
 });
 
 // put methods
