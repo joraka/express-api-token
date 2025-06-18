@@ -6,6 +6,7 @@ require("./config/env");
 
 const pgPool = require("./config/db");
 const createUserTable = require("./utils/dbinit");
+const { hashPass, compareHashPass } = require("./utils/hash");
 
 app.use(express.json());
 
@@ -163,13 +164,15 @@ app.post("/v1/users", async (req, res) => {
   }
 
   try {
+    const hashedPass = await hashPass(password);
+
     const result = await pgPool.query(
       `
       INSERT INTO users (user_name, email, password)
       VALUES ($1, $2, $3)
       RETURNING *
     `,
-      [username, email, password]
+      [username, email, hashedPass]
     );
 
     const dbUser = result.rows[0];
@@ -341,37 +344,57 @@ app.delete("/v1/users/:id", (req, res) => {
 });
 
 //login
-app.get("/v1/login", (req, res) => {
-  let { username, password } = req?.body || {};
+app.get("/v1/login", async (req, res) => {
+  try {
+    let { username, password } = req?.body || {};
 
-  if (!validator.isAllFieldExists([username, password])) {
-    return res.status(400).json({ message: "Must have valid username and password" });
-  }
+    if (!validator.isAllFieldExists([username, password])) {
+      return res.status(400).json({ message: "Must have valid username and password" });
+    }
 
-  if (!validator.isValidUsername(username)) {
-    return res.status(400).json({ message: "Username length must be between 3 and 32" });
-  }
+    if (!validator.isValidUsername(username)) {
+      return res.status(400).json({ message: "Username length must be between 3 and 32" });
+    }
 
-  if (!validator.isValidPassword(password)) {
-    return res.status(400).json({
-      message:
-        "Password must be in numerical and alphabetical characters, length must be between 3 and 32 characters",
+    if (!validator.isValidPassword(password)) {
+      return res.status(400).json({
+        message:
+          "Password must be in numerical and alphabetical characters, length must be between 3 and 32 characters",
+      });
+    }
+
+    const result = await pgPool.query("SELECT * FROM users WHERE user_name = $1;", [username]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const dbUser = result.rows[0];
+
+    const isValidPass = await compareHashPass(password, dbUser.password);
+
+    if (!isValidPass) {
+      return res.status(400).json({
+        message: "Invalid password",
+      });
+    }
+
+    res.json({
+      message: "User logged in",
+      user: {
+        id: dbUser.user_id,
+        username: dbUser.user_name,
+      },
+      token: `${Date.now()}-${parseInt(Math.random() * 1e13)}`,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Server error",
     });
   }
-
-  const foundUserIndex = db.users.findIndex(
-    (user) => user.username === username && user.password === password
-  );
-
-  if (foundUserIndex === -1) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  res.json({
-    message: "User logged in",
-    user: getUserData(db.users[foundUserIndex]),
-    token: `${Date.now()}-${parseInt(Math.random() * 1e13)}`,
-  });
 });
 
 app.listen(port, (err) => {

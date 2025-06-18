@@ -19,7 +19,6 @@ const createUserTable = async () => {
   } catch (err) {
     console.error("Error creating user table", err);
     process.exit(1);
-    return err;
   }
 };
 
