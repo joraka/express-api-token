@@ -48,4 +48,4 @@ jobs:
           DB_PORT: 5432
           DB_NAME: postgress_db
           JWT_SECRET: testsecret
-        run: npm test
+        run: npm run start:tests
