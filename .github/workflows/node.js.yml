@@ -61,3 +61,7 @@ jobs:
           name: newman-report
           path: newman-report.html
           retention-days: 2
+
+      - name: List files
+        if: always()
+        run: ls -l
