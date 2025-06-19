@@ -7,6 +7,8 @@ require("./config/env");
 const pgPool = require("./config/db");
 const createUserTable = require("./utils/dbinit");
 const { hashPass, compareHashPass } = require("./utils/hash");
+const jwt = require("./utils/jwt");
+const { authentificate } = require("./utils/authMiddleware");
 
 app.use(express.json());
 
@@ -90,36 +92,53 @@ app.get("/", (req, res) => {
   res.status(400).send("OK");
 });
 
-app.get("/insert", async (req, res) => {
-  await createUserTable();
-  res.status(400).send("inserted");
-});
-
 app.get("/v1/", (req, res) => {
   res.status(200).send("hi");
 });
 
-app.get("/v1/users", (req, res) => {
-  res.status(200).json(db.users.map(getUserData));
+app.get("/v1/users", authentificate, (req, res) => {
+  res.status(200).json({
+    message: "users found",
+    data: ["1", "2", "3", req.user],
+  });
 });
 
-app.get("/v1/users/:id", (req, res) => {
-  const idNum = parseInt(req.params?.id, 10);
+app.get("/v1/user/details", authentificate, async (req, res) => {
+  // app.get("/v1/users/:id", authentificate, async (req, res) => {
+  try {
+    const idNum = req.user.id;
 
-  if (!validator.isValidId(idNum)) {
-    return res.status(400).json({ message: "Invalid or missing ID" });
+    const result = await pgPool.query(
+      `
+          SELECT user_id, user_name, email
+          FROM users
+          WHERE user_id = $1
+          `,
+      [idNum]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const user = result.rows[0];
+
+    res.status(200).json({
+      message: "User found",
+      user: {
+        id: user.user_id,
+        username: user.user_name,
+        email: user.email,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Interal server error",
+    });
   }
-
-  const userObj = db.users.find((user) => user.id === idNum);
-
-  if (!userObj) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  res.status(200).json({
-    message: "User found",
-    user: getUserData(userObj),
-  });
 });
 
 //post methods
@@ -387,7 +406,10 @@ app.get("/v1/login", async (req, res) => {
         id: dbUser.user_id,
         username: dbUser.user_name,
       },
-      token: `${Date.now()}-${parseInt(Math.random() * 1e13)}`,
+      token: jwt.generateToken({
+        id: dbUser.user_id,
+        username: dbUser.user_name,
+      }),
     });
   } catch (err) {
     console.log(err);
@@ -397,7 +419,10 @@ app.get("/v1/login", async (req, res) => {
   }
 });
 
-app.listen(port, (err) => {
-  if (err) return console.log(err);
-  console.log(`listening at http://localhost:${port}`);
+//listen
+createUserTable().then(() => {
+  app.listen(port, (err) => {
+    if (err) return console.log(err);
+    console.log(`listening at http://localhost:${port}`);
+  });
 });
