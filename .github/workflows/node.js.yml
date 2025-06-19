@@ -55,7 +55,7 @@ jobs:
         run: npm run test:api
 
       - name: Upload Newman HTML report
-        if: always()
+        # if: always()
         uses: actions/upload-artifact@v4
         with:
           name: newman-report
@@ -63,5 +63,5 @@ jobs:
           retention-days: 2
 
       - name: List files
-        if: always()
+        # if: always()
         run: ls -l

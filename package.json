@@ -11,7 +11,7 @@
     "start:tests:con": "concurrently \"node app.js\" \"npm run test\"",
     "start:tests:con:k": "concurrently -k \"node app.js\" \"npm run test\"",
     "start:tests:con:wait:k": "concurrently -k \"node app.js\" \"wait-on http://localhost:3131 && npm run test\"",
-    "test:api": "newman run tests.postman_collection.json -r cli,html --reporter-html-export=newman-report.html"
+    "test:api": "newman run tests.postman_collection.json -r cli,htmlextra --reporter-htmlextra-export=newman-report.html"
   },
   "keywords": [],
   "author": "",
