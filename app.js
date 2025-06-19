@@ -89,11 +89,7 @@ const validator = {
 };
 
 app.get("/", (req, res) => {
-  res.status(400).send("OK");
-});
-
-app.get("/v1/", (req, res) => {
-  res.status(200).send("hi");
+  res.status(200).send("OK");
 });
 
 app.get("/v1/users", authentificate, (req, res) => {
