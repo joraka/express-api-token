@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Node.js test api
 
 on:
   # push:
@@ -50,3 +50,13 @@ jobs:
           DB_NAME: postgress_db
           JWT_SECRET: testsecret
         run: npm run start:tests
+
+      - name: Run Newman API tests
+        run: npm run test:api
+
+      - name: Upload Newman HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-report
+          path: newman-report.html
+          retention-days: 2
