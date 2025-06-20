@@ -14,7 +14,7 @@ const createUserTable = async () => {
 
   try {
     const result = await pool.query(query);
-    console.log('user table created if not exists')
+    console.log("User table created if not exists");
     return result;
   } catch (err) {
     console.error("Error creating user table", err);
@@ -22,4 +22,23 @@ const createUserTable = async () => {
   }
 };
 
-module.exports = createUserTable;
+const createTokenBlacklistTable = async () => {
+  const query = `
+    CREATE TABLE IF NOT EXISTS jwt_blacklist (
+      jwt_token TEXT PRIMARY KEY,
+      expires_at TIMESTAMP NOT NULL
+    );
+  `;
+  try {
+    const result = await pool.query(query);
+    console.log("Token blacklist table created");
+    return result;
+  } catch (err) {
+    console.error("Error creating blacklist table", err);
+    throw err;
+  }
+};
+
+const createDbTables = () => Promise.all([createUserTable(), createTokenBlacklistTable()]);
+
+module.exports = { createTokenBlacklistTable, createUserTable, createDbTables };

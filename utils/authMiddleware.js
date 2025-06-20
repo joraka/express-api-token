@@ -10,8 +10,15 @@ const authentificate = (req, res, next) => {
       });
     }
 
+    if (jwt.isTokenBlacklisted(token)) {
+      return res.status(401).json({
+        message: "Unauthorized (token expired/removed)",
+      });
+    }
+
     try {
       req.user = jwt.verifyToken(token);
+      req.user.token = token;
       return next();
     } catch (jwtErr) {
       return res.status(401).json({

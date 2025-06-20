@@ -2,7 +2,7 @@ const pg = require("pg");
 
 const { Pool } = pg;
  
-const pool = new Pool({
+const pgPool = new Pool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -14,4 +14,4 @@ const pool = new Pool({
   maxLifetimeSeconds: 60
 })
 
-module.exports = pool;
+module.exports = pgPool;
