@@ -67,16 +67,6 @@ router.patch("/user", authentificate, async (req, res) => {
       updateObj.data.push(await hashPass(password));
     }
 
-    console.log(
-      updateObj,
-      `
-        UPDATE users
-        SET ${updateObj.query.join(",")}
-        WHERE user_id = $${updateObj.query.length + 1}
-        RETURNING *
-        `
-    );
-
     const result = await pgPool.query(
       `
         UPDATE users

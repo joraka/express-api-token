@@ -1,226 +1,1405 @@
 {
 	"info": {
-		"_postman_id": "ac658857-d74c-4486-b2b7-7782b7414502",
-		"name": "temp",
+		"_postman_id": "1787df69-4f46-4b75-8668-89edd88ee68b",
+		"name": "local express testing webtoken",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "10518058",
-		"_collection_link": "https://bit-team-9341.postman.co/workspace/BIT~4410a6db-ef5d-4a56-b2f1-0602140ae45e/collection/10518058-ac658857-d74c-4486-b2b7-7782b7414502?action=share&source=collection_link&creator=10518058"
+		"_collection_link": "https://bit-team-9341.postman.co/workspace/BIT~4410a6db-ef5d-4a56-b2f1-0602140ae45e/collection/10518058-1787df69-4f46-4b75-8668-89edd88ee68b?action=share&source=collection_link&creator=10518058"
 	},
 	"item": [
 		{
-			"name": "/users - add user Copy",
-			"event": [
+			"name": "Positive Tests",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Response time is less than 100ms\", function () {\r",
-							"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Response body contains user information\", () => {\r",
-							"    const requestBody = JSON.parse(pm.request.body.raw);\r",
-							"    const { message, user } = pm.response.json();\r",
-							"\r",
-							"    pm.collectionVariables.set(\"REQUEST_BODY\", pm.request.body.raw);\r",
-							"    pm.collectionVariables.set(\"REQUEST_ID\", user.id);\r",
-							"\r",
-							"    pm.expect(message).to.eql(\"User created\", \"Message should be 'User created'\");\r",
-							"\r",
-							"    pm.expect(user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
-							"\r",
-							"    pm.expect(user.id, \"ID must be at least 1\").to.be.a(\"number\").and.to.be.at.least(1);\r",
-							"    pm.expect(user.username, \"Username should match the request body\").to.be.a(\"string\").and.eql(requestBody.username);\r",
-							"    pm.expect(user.email, \"Email should match the request body\").to.be.a(\"string\").and.eql(requestBody.email);\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"{{$randomUserName}}\",\r\n    \"password\": \"pass123\",\r\n    \"email\": \"{{$randomEmail}}\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{BASE_URL}}/v1/users",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"v1",
-						"users"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "/login - login and data validation after email and username update Copy",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Response time is less than 100ms\", function () {\r",
-							"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Response body contains login information\", () => {\r",
-							"    const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
-							"    const requestId = Number(pm.collectionVariables.get(\"REQUEST_ID\"));\r",
-							"    const responseBody = pm.response.json();\r",
-							"\r",
-							"    //save token\r",
-							"    pm.collectionVariables.set(\"TOKEN\", responseBody.token);\r",
-							"\r",
-							"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"user\", \"token\");\r",
-							"\r",
-							"    const { message, user, token } = responseBody;\r",
-							"\r",
-							"    pm.expect(message).to.eql(\"User logged in\", \"Message should be 'User logged in'\");\r",
-							"\r",
-							"    pm.expect(user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
-							"    pm.expect(user.id, \"User ID must match request id\").to.be.a(\"number\").and.to.be.eql(requestId);\r",
-							"    pm.expect(user.username, \"Username should match request body\").to.be.a(\"string\").and.eql(requestBody.username);\r",
-							"    pm.expect(user.email, \"Email should match request body\").to.be.a(\"string\").and.eql(requestBody.email);\r",
-							"\r",
-							"    pm.expect(token, \"Token must be a non-empty string\").to.be.a(\"string\").and.not.empty;\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
-							"\r",
-							"pm.request.headers.add('content-type: application/json')\r",
-							"\r",
-							"pm.request.body = {\r",
-							"    mode: 'raw',\r",
-							"    raw: JSON.stringify({\r",
-							"        username: requestBody.username,\r",
-							"        password: requestBody.password,\r",
-							"    })\r",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{BASE_URL}}/v1/login",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"v1",
-						"login"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "/user/details - get user Copy",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Response time is less than 100ms\", function () {\r",
-							"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
-							"});\r",
-							"\r",
-							"pm.test(\"Response body contains user information\", function () {\r",
-							"    const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
-							"    const responseUserId = parseInt(pm.collectionVariables.get(\"REQUEST_ID\"));\r",
-							"    const responseBody = pm.response.json();\r",
-							"\r",
-							"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"user\");\r",
-							"    pm.expect(responseBody.user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
-							"\r",
-							"    pm.expect(responseBody.user.username).to.be.a(\"string\");\r",
-							"    pm.expect(responseBody.user.email).to.be.a(\"string\");\r",
-							"\r",
-							"    pm.expect(responseBody.message).to.eql(\"User found\", \"Message should be 'User found'\");\r",
-							"    pm.expect(responseBody.user.id).to.eql(responseUserId, \"Response user id should match the request id\");\r",
-							"    pm.expect(responseBody.user.username).to.eql(requestBody.username, \"Username should match the request body\");\r",
-							"    pm.expect(responseBody.user.email).to.eql(requestBody.email, \"Email should match the request body\");\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
+					"name": "/users - create user",
+					"event": [
 						{
-							"key": "token",
-							"value": "{{TOKEN}}",
-							"type": "string"
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 300ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains user information\", () => {\r",
+									"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+									"    const { message, user } = pm.response.json();\r",
+									"\r",
+									"    pm.collectionVariables.set(\"REQUEST_BODY\", pm.request.body.raw);\r",
+									"    pm.collectionVariables.set(\"REQUEST_ID\", user.id);\r",
+									"\r",
+									"    pm.expect(message).to.eql(\"User created\", \"Message should be 'User created'\");\r",
+									"\r",
+									"    pm.expect(user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
+									"\r",
+									"    pm.expect(user.id, \"ID must be at least 1\").to.be.a(\"number\").and.to.be.at.least(1);\r",
+									"    pm.expect(user.username, \"Username should match the request body\").to.be.a(\"string\").and.eql(requestBody.username);\r",
+									"    pm.expect(user.email, \"Email should match the request body\").to.be.a(\"string\").and.eql(requestBody.email);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{$randomUserName}}\",\r\n    \"password\": \"pass123\",\r\n    \"email\": \"{{$randomEmail}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/login - login and data validation after email and username update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 300ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains login information\", () => {\r",
+									"    const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
+									"    const requestId = Number(pm.collectionVariables.get(\"REQUEST_ID\"));\r",
+									"    const responseBody = pm.response.json();\r",
+									"\r",
+									"    //save token\r",
+									"    pm.collectionVariables.set(\"TOKEN\", responseBody.token);\r",
+									"\r",
+									"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"user\", \"token\");\r",
+									"\r",
+									"    const { message, user, token } = responseBody;\r",
+									"\r",
+									"    pm.expect(message).to.eql(\"User logged in\", \"Message should be 'User logged in'\");\r",
+									"\r",
+									"    pm.expect(user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
+									"    pm.expect(user.id, \"User ID must match request id\").to.be.a(\"number\").and.to.be.eql(requestId);\r",
+									"    pm.expect(user.username, \"Username should match request body\").to.be.a(\"string\").and.eql(requestBody.username);\r",
+									"    pm.expect(user.email, \"Email should match request body\").to.be.a(\"string\").and.eql(requestBody.email);\r",
+									"\r",
+									"    pm.expect(token, \"Token must be a non-empty string\").to.be.a(\"string\").and.not.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
+									"\r",
+									"pm.request.headers.add('content-type: application/json')\r",
+									"\r",
+									"pm.request.body = {\r",
+									"    mode: 'raw',\r",
+									"    raw: JSON.stringify({\r",
+									"        username: requestBody.username,\r",
+									"        password: requestBody.password,\r",
+									"    })\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/v1/login",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user - get user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 100ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains user information\", function () {\r",
+									"    const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
+									"    const responseUserId = parseInt(pm.collectionVariables.get(\"REQUEST_ID\"));\r",
+									"    const responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"user\");\r",
+									"    pm.expect(responseBody.user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
+									"\r",
+									"    pm.expect(responseBody.user.username).to.be.a(\"string\");\r",
+									"    pm.expect(responseBody.user.email).to.be.a(\"string\");\r",
+									"\r",
+									"    pm.expect(responseBody.message).to.eql(\"User details\", \"Message should be 'User details'\");\r",
+									"    pm.expect(responseBody.user.id).to.eql(responseUserId, \"Response user id should match the request id\");\r",
+									"    pm.expect(responseBody.user.username).to.eql(requestBody.username, \"Username should match the request body\");\r",
+									"    pm.expect(responseBody.user.email).to.eql(requestBody.email, \"Email should match the request body\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user - replace user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    pm.collectionVariables.set(\"REQUEST_BODY\", pm.request.body.raw);\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 100ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains user information\", function () {\r",
+									"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+									"    const responseUserId = parseInt(pm.collectionVariables.get(\"REQUEST_ID\"));\r",
+									"    const responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"user\");\r",
+									"    pm.expect(responseBody.user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
+									"\r",
+									"    pm.expect(responseBody.message).to.eql(\"User updated\", \"Message should be 'User updated'\");\r",
+									"    pm.expect(responseBody.user.id).to.eql(responseUserId, \"ID must match requested\");\r",
+									"    pm.expect(responseBody.user.username).to.eql(requestBody.username, \"Username should match the request body\");\r",
+									"    pm.expect(responseBody.user.email).to.eql(requestBody.email, \"Email should match the request body\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{$randomUserName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"password\": \"agsdadsgjgasgd1j5129512\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user - update username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
+									"    Object.assign(requestBody, JSON.parse(pm.request.body.raw))\r",
+									"    pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify(requestBody));\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 300ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains user information\", function () {\r",
+									"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+									"    const responseUserId = parseInt(pm.collectionVariables.get(\"REQUEST_ID\"));\r",
+									"    const responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"user\");\r",
+									"    pm.expect(responseBody.user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
+									"\r",
+									"    pm.expect(responseBody.message).to.eql(\"Data updated\", \"Message should be 'Data updated'\");\r",
+									"    pm.expect(responseBody.user.id).to.eql(responseUserId, \"ID must match requested\");\r",
+									"    pm.expect(responseBody.user.username).to.eql(requestBody.username, \"Username should match the request body\");\r",
+									"    \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user - update email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
+									"    Object.assign(requestBody, JSON.parse(pm.request.body.raw))\r",
+									"    pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify(requestBody));\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 300ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains user information\", function () {\r",
+									"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+									"    const responseUserId = parseInt(pm.collectionVariables.get(\"REQUEST_ID\"));\r",
+									"    const responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"user\");\r",
+									"    pm.expect(responseBody.user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
+									"\r",
+									"    pm.expect(responseBody.message).to.eql(\"Data updated\", \"Message should be 'Data updated'\");\r",
+									"    pm.expect(responseBody.user.id).to.eql(responseUserId, \"ID must match requested\");\r",
+									"    pm.expect(responseBody.user.email).to.eql(requestBody.email, \"Email should match the request body\");\r",
+									"    \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{$randomEmail}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user - update password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
+									"    Object.assign(requestBody, JSON.parse(pm.request.body.raw))\r",
+									"    pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify(requestBody));\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 300ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains user information\", function () {\r",
+									"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+									"    const responseUserId = parseInt(pm.collectionVariables.get(\"REQUEST_ID\"));\r",
+									"    const responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"user\");\r",
+									"    pm.expect(responseBody.user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
+									"\r",
+									"    pm.expect(responseBody.message).to.eql(\"Data updated\", \"Message should be 'Data updated'\");\r",
+									"    pm.expect(responseBody.user.id).to.eql(responseUserId, \"ID must match requested\");\r",
+									"    \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"password\": \"aaaaaaa4411111\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user - update email and password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
+									"    Object.assign(requestBody, JSON.parse(pm.request.body.raw))\r",
+									"    pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify(requestBody));\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 300ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains user information\", function () {\r",
+									"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+									"    const responseUserId = parseInt(pm.collectionVariables.get(\"REQUEST_ID\"));\r",
+									"    const responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"user\");\r",
+									"    pm.expect(responseBody.user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
+									"\r",
+									"    pm.expect(responseBody.message).to.eql(\"Data updated\", \"Message should be 'Data updated'\");\r",
+									"    pm.expect(responseBody.user.id).to.eql(responseUserId, \"ID must match requested\");\r",
+									"    \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"password\": \"aaaaaaa4411111\",\r\n    \"email\": \"{{$randomEmail}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user - update username and password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
+									"    Object.assign(requestBody, JSON.parse(pm.request.body.raw))\r",
+									"    pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify(requestBody));\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 300ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains user information\", function () {\r",
+									"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+									"    const responseUserId = parseInt(pm.collectionVariables.get(\"REQUEST_ID\"));\r",
+									"    const responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"user\");\r",
+									"    pm.expect(responseBody.user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
+									"\r",
+									"    pm.expect(responseBody.message).to.eql(\"Data updated\", \"Message should be 'Data updated'\");\r",
+									"    pm.expect(responseBody.user.id).to.eql(responseUserId, \"ID must match requested\");\r",
+									"    \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{$randomUserName}}\",\r\n    \"password\": \"regwregerge4rg948erger\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user - update email and username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {\r",
+									"    const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
+									"    Object.assign(requestBody, JSON.parse(pm.request.body.raw))\r",
+									"    pm.collectionVariables.set(\"REQUEST_BODY\", JSON.stringify(requestBody));\r",
+									"};\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 300ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains user information\", function () {\r",
+									"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+									"    const responseUserId = parseInt(pm.collectionVariables.get(\"REQUEST_ID\"));\r",
+									"    const responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"user\");\r",
+									"    pm.expect(responseBody.user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
+									"\r",
+									"    pm.expect(responseBody.message).to.eql(\"Data updated\", \"Message should be 'Data updated'\");\r",
+									"    pm.expect(responseBody.user.id).to.eql(responseUserId, \"ID must match requested\");\r",
+									"    \r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\": \"{{$randomUserName}}\",\r\n    \"email\": \"{{$randomEmail}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{BASE_URL}}/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user - delete user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 300ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains user deletion message\", function () {\r",
+									"    const responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody).to.have.property(\"message\");\r",
+									"    pm.expect(responseBody.message).to.be.a(\"string\");\r",
+									"    pm.expect(responseBody.message).to.eql(\"User deleted\", \"Message should be 'User deleted'\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"user"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Negative Tests",
+			"item": [
+				{
+					"name": "Create user",
+					"item": [
+						{
+							"name": "/user - add invalid username (too short)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response time is less than 100ms\", function () {\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains user information\", function () {\r",
+											"    const responseBody = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseBody).to.have.property('message');\r",
+											"    pm.expect(responseBody.message).to.be.a('string');\r",
+											"    pm.expect(responseBody.message).to.equal('Username length must be between 3 and 32')\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"aa\",\r\n    \"password\": \"pass123\",\r\n    \"email\": \"{{$randomEmail}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/v1/user",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"v1",
+										"user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/user - add invalid username (too long)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response time is less than 100ms\", function () {\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains user information\", function () {\r",
+											"    const responseBody = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseBody).to.have.property('message');\r",
+											"    pm.expect(responseBody.message).to.be.a('string');\r",
+											"    pm.expect(responseBody.message).to.equal('Username length must be between 3 and 32')\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"111111111111111111111111111111111\",\r\n    \"password\": \"pass123\",\r\n    \"email\": \"{{$randomEmail}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/v1/user",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"v1",
+										"user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/user - add invalid password (only letters)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response time is less than 100ms\", function () {\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains user information\", function () {\r",
+											"    const responseBody = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseBody).to.have.property('message');\r",
+											"    pm.expect(responseBody.message).to.be.a('string');\r",
+											"    pm.expect(responseBody.message).to.equal('Password must be in numerical and alphabetical characters, length must be between 3 and 32 characters')\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{$randomUserName}}\",\r\n    \"password\": \"pasaaaaas\",\r\n    \"email\": \"{{$randomEmail}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/v1/user",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"v1",
+										"user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/user - add invalid password (only numbers)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response time is less than 100ms\", function () {\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains user information\", function () {\r",
+											"    const responseBody = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseBody).to.have.property('message');\r",
+											"    pm.expect(responseBody.message).to.be.a('string');\r",
+											"    pm.expect(responseBody.message).to.equal('Password must be in numerical and alphabetical characters, length must be between 3 and 32 characters')\r",
+											"\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"{{$randomUserName}}\",\r\n    \"password\": \"1111123\",\r\n    \"email\": \"{{$randomEmail}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/v1/user",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"v1",
+										"user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/user - no body",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response time is less than 100ms\", function () {\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains user information\", function () {\r",
+											"    const responseBody = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseBody).to.have.property('message');\r",
+											"    pm.expect(responseBody.message).to.be.a('string');\r",
+											"    pm.expect(responseBody.message).to.equal('Missing field. Username, email and password are required.')\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/v1/user",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"v1",
+										"user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/user - only username",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response time is less than 100ms\", function () {\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains user information\", function () {\r",
+											"    const responseBody = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseBody).to.have.property('message');\r",
+											"    pm.expect(responseBody.message).to.be.a('string');\r",
+											"    pm.expect(responseBody.message).to.equal('Missing field. Username, email and password are required.')\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"username\": \"bob\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/v1/user",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"v1",
+										"user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/user - only password",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response time is less than 100ms\", function () {\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains user information\", function () {\r",
+											"    const responseBody = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseBody).to.have.property('message');\r",
+											"    pm.expect(responseBody.message).to.be.a('string');\r",
+											"    pm.expect(responseBody.message).to.equal('Missing field. Username, email and password are required.')\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"password\": \"bob123\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/v1/user",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"v1",
+										"user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/user - only email",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {\r",
+											"    pm.response.to.have.status(400);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response time is less than 100ms\", function () {\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains user information\", function () {\r",
+											"    const responseBody = pm.response.json();\r",
+											"\r",
+											"    pm.expect(responseBody).to.have.property('message');\r",
+											"    pm.expect(responseBody.message).to.be.a('string');\r",
+											"    pm.expect(responseBody.message).to.equal('Missing field. Username, email and password are required.')\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"bob@marley.com\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{BASE_URL}}/v1/user",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"v1",
+										"user"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{BASE_URL}}/v1/user/details",
-					"host": [
-						"{{BASE_URL}}"
-					],
-					"path": [
-						"v1",
-						"user",
-						"details"
+				{
+					"name": "Get Single User",
+					"item": [
+						{
+							"name": "/user - no token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 401\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response time is less than 300ms\", function () {\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains user information\", function () {\r",
+											"    const responseBody = pm.response.json();\r",
+											"    pm.expect(responseBody).to.have.property(\"message\");\r",
+											"    pm.expect(responseBody.message).to.be.a('string');\r",
+											"    pm.expect(responseBody.message).to.equal('Unauthorized (invalid token)');\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/v1/user",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"v1",
+										"user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "/user - invalid token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 401\", function () {\r",
+											"    pm.response.to.have.status(401);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response time is less than 300ms\", function () {\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(300);\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Response body contains user information\", function () {\r",
+											"    const responseBody = pm.response.json();\r",
+											"    pm.expect(responseBody).to.have.property(\"message\");\r",
+											"    pm.expect(responseBody.message).to.be.a('string');\r",
+											"    pm.expect(responseBody.message).to.equal('Unauthorized (bad token)');\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "eyJhb1111sInR5cCI6IkpXVCJ9.eyJpZCI6MjQsInVzZXJuYW1lIjoiTm9haDU4IiwiaWF0IjoxNzUwMzE3MzcxLCJleHAiOjE3NTAzMjA5NzF9.79UcDOCwFT5NJd70VmTnC2o-3woUQY6mg7qNF5P1D5Q",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{BASE_URL}}/v1/user",
+									"host": [
+										"{{BASE_URL}}"
+									],
+									"path": [
+										"v1",
+										"user"
+									]
+								}
+							},
+							"response": []
+						}
 					]
 				}
-			},
-			"response": []
+			]
 		}
 	],
 	"event": [
@@ -252,15 +1431,21 @@
 			"type": "string"
 		},
 		{
-			"key": "REQUEST_BODY",
-			"value": ""
+			"key": "REQUEST_ID",
+			"value": "",
+			"type": "string"
 		},
 		{
-			"key": "REQUEST_ID",
-			"value": ""
+			"key": "REQUEST_BODY",
+			"value": "",
+			"type": "string"
 		},
 		{
 			"key": "TOKEN",
+			"value": ""
+		},
+		{
+			"key": "token",
 			"value": ""
 		}
 	]
