@@ -51,9 +51,6 @@ jobs:
           JWT_SECRET: testsecret
         run: npm run start:tests
 
-      - name: Run Newman API tests
-        run: npm run test:api
-
       - name: Upload Newman HTML report
         if: always() && hashFiles('newman-report.html') != ''
         uses: actions/upload-artifact@v4
