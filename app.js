@@ -12,6 +12,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/v1/", require("./routes/userDetails.js"));
+app.use("/v1/", require("./routes/allUsersDetails.js"));
 app.use("/v1/", require("./routes/createUser.js"));
 app.use("/v1/", require("./routes/updateAllUserData.js"));
 app.use("/v1/", require("./routes/updateUserDataField.js"));
