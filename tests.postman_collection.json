@@ -225,6 +225,68 @@
 					"response": []
 				},
 				{
+					"name": "/users - get all users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 100ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains user information\", function () {\r",
+									"    const responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"users\");\r",
+									"    pm.expect(responseBody.message).to.eql(\"All users\", \"Message should be 'All users'\");\r",
+									"    pm.expect(responseBody.users).to.be.an(\"array\").and.not.empty;\r",
+									"\r",
+									"    responseBody.users.forEach(user => {\r",
+									"        pm.expect(user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
+									"        pm.expect(user.id).to.be.a(\"number\");\r",
+									"        pm.expect(user.username).to.be.a(\"string\");\r",
+									"        pm.expect(user.email).to.be.a(\"string\");\r",
+									"    });\r",
+									"\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{BASE_URL}}/v1/users",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "/user - replace user",
 					"event": [
 						{
@@ -379,6 +441,69 @@
 								}
 							}
 						},
+						"url": {
+							"raw": "{{BASE_URL}}/v1/user",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"v1",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user - get user after username and email update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 100ms\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains user information\", function () {\r",
+									"    const requestBody = JSON.parse(pm.collectionVariables.get(\"REQUEST_BODY\"));\r",
+									"    const responseUserId = parseInt(pm.collectionVariables.get(\"REQUEST_ID\"));\r",
+									"    const responseBody = pm.response.json();\r",
+									"\r",
+									"    pm.expect(responseBody).to.be.an(\"object\").and.have.all.keys(\"message\", \"user\");\r",
+									"    pm.expect(responseBody.user).to.be.an(\"object\").and.have.all.keys(\"id\", \"username\", \"email\");\r",
+									"\r",
+									"    pm.expect(responseBody.user.username).to.be.a(\"string\");\r",
+									"    pm.expect(responseBody.user.email).to.be.a(\"string\");\r",
+									"\r",
+									"    pm.expect(responseBody.message).to.eql(\"User details\", \"Message should be 'User details'\");\r",
+									"    pm.expect(responseBody.user.id).to.eql(responseUserId, \"Response user id should match the request id\");\r",
+									"    pm.expect(responseBody.user.username).to.eql(requestBody.username, \"Username should match the request body\");\r",
+									"    pm.expect(responseBody.user.email).to.eql(requestBody.email, \"Email should match the request body\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
 						"url": {
 							"raw": "{{BASE_URL}}/v1/user",
 							"host": [
